@@ -20,11 +20,11 @@ const MuscleMap = () => {
           </div>
 
           {/* Placeholder for body SVG */}
-          <div className="mb-8 bg-gradient-to-br from-primary/5 to-accent/5 rounded-xl border-2 border-dashed border-border p-12 flex items-center justify-center">
+          <div className="mb-8 bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl border border-border p-12 flex items-center justify-center">
             <div className="text-center">
-              <Dumbbell className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <Dumbbell className="w-16 h-16 text-primary mx-auto mb-4" />
               <p className="text-sm text-muted-foreground">
-                Miejsce na interaktywną mapę ciała
+                Sylwetka ciała - miejsce na przyszłą interaktywną mapę
               </p>
             </div>
           </div>
