@@ -1,4 +1,4 @@
-# FitTracker - PWA Workout Planner
+# GymTracker - PWA Workout Planner
 
 Nowoczesna aplikacja webowa (PWA) do planowania i śledzenia treningów, zbudowana w React + Vite + TailwindCSS.
 
@@ -37,7 +37,7 @@ Nowoczesna aplikacja webowa (PWA) do planowania i śledzenia treningów, zbudowa
 ```bash
 # Klonowanie repozytorium
 git clone <your-repo-url>
-cd fittracker
+cd gymtracker
 
 # Instalacja zależności
 npm install
