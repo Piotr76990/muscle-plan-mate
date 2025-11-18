@@ -1,73 +1,134 @@
-# Welcome to your Lovable project
+# FitTracker - PWA Workout Planner
 
-## Project info
+Nowoczesna aplikacja webowa (PWA) do planowania i śledzenia treningów, zbudowana w React + Vite + TailwindCSS.
 
-**URL**: https://lovable.dev/projects/034b2e1c-71f8-4a71-812c-f0550f0a380e
+## 🚀 Funkcjonalności
 
-## How can I edit this code?
+- **Mapa mięśni** - Przeglądaj ćwiczenia według grup mięśniowych
+- **Plan treningowy** - Planuj treningi na cały tydzień
+- **Historia i progres** - Śledź wykonane treningi i postępy
+- **Tracker wagi** - Monitoruj swoją wagę i kompozycję ciała
+- **Offline support** - Działa bez połączenia z internetem dzięki Service Worker
+- **Installable** - Możliwość instalacji jako aplikacja na urządzeniach mobilnych
 
-There are several ways of editing your application.
+## 📱 Instalacja jako PWA
 
-**Use Lovable**
+### Na iPhone:
+1. Otwórz aplikację w Safari
+2. Kliknij przycisk "Udostępnij" (ikona ze strzałką)
+3. Przewiń w dół i wybierz "Dodaj do ekranu początkowego"
+4. Kliknij "Dodaj" w prawym górnym rogu
+5. Aplikacja pojawi się na ekranie głównym jako ikona
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/034b2e1c-71f8-4a71-812c-f0550f0a380e) and start prompting.
+### Na Android:
+1. Otwórz aplikację w Chrome
+2. Kliknij menu (trzy kropki)
+3. Wybierz "Zainstaluj aplikację" lub "Dodaj do ekranu głównego"
+4. Potwierdź instalację
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠️ Uruchomienie lokalne
 
-**Use your preferred IDE**
+### Wymagania
+- Node.js (v18 lub nowszy)
+- npm lub yarn
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Instalacja
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```bash
+# Klonowanie repozytorium
+git clone <your-repo-url>
+cd fittracker
 
-Follow these steps:
+# Instalacja zależności
+npm install
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Uruchomienie w trybie deweloperskim
 npm run dev
+
+# Build produkcyjny
+npm run build
+
+# Podgląd buildu produkcyjnego
+npm run preview
 ```
 
-**Edit a file directly in GitHub**
+Aplikacja będzie dostępna pod adresem `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📂 Struktura projektu
 
-**Use GitHub Codespaces**
+```
+src/
+├── components/          # Komponenty UI
+│   ├── BottomNav.tsx   # Dolny pasek nawigacji (mobile)
+│   ├── Header.tsx      # Nagłówek aplikacji
+│   ├── Card.tsx        # Karty nawigacyjne
+│   ├── ExerciseCard.tsx # Karty ćwiczeń
+│   ├── Modal.tsx       # Okno modalne
+│   └── Toast.tsx       # Powiadomienia
+├── pages/              # Strony aplikacji
+│   ├── Home.tsx        # Strona główna
+│   ├── MuscleMap.tsx   # Mapa mięśni
+│   ├── Exercises.tsx   # Lista ćwiczeń
+│   ├── Plan.tsx        # Plan treningowy
+│   ├── History.tsx     # Historia treningów
+│   └── Weight.tsx      # Tracker wagi
+├── data/               # Dane aplikacji
+│   └── exercises.sample.ts # Przykładowe ćwiczenia
+├── utils/              # Narzędzia
+│   └── storage.ts      # Wrapper dla localStorage
+├── App.tsx             # Główny komponent
+└── main.tsx           # Entry point
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+public/
+├── manifest.json       # PWA manifest
+├── sw.js              # Service Worker
+├── icon-192.png       # Ikona PWA 192x192
+└── icon-512.png       # Ikona PWA 512x512
+```
 
-## What technologies are used for this project?
+## 💾 LocalStorage
 
-This project is built with:
+Aplikacja używa localStorage do przechowywania danych:
+- `workouts_v1` - Historia wykonanych treningów
+- `plan_v1` - Plan treningowy
+- `weights_v1` - Pomiary wagi
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Wszystkie operacje na storage są obudowane wrapperem w `src/utils/storage.ts`.
 
-## How can I deploy this project?
+## 🎨 Design System
 
-Simply open [Lovable](https://lovable.dev/projects/034b2e1c-71f8-4a71-812c-f0550f0a380e) and click on Share -> Publish.
+Aplikacja używa spójnego systemu designu opartego na:
+- **Primary Color**: Cyan (#0891b2) - energetyczny niebieski
+- **Accent Color**: Orange (#ea580c) - akcenty i CTA
+- **Komponenty**: shadcn/ui + własne komponenty
+- **Responsywność**: Mobile-first approach
+- **Touch targets**: Minimum 44px dla komfortu na mobile
 
-## Can I connect a custom domain to my Lovable project?
+## 🔧 Technologie
 
-Yes, you can!
+- **React 18** - UI library
+- **Vite** - Build tool
+- **TypeScript** - Type safety
+- **TailwindCSS** - Styling
+- **React Router** - Routing
+- **Lucide React** - Icons
+- **PWA** - Offline support & installability
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 📝 Dalszy rozwój
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Aplikacja jest szkieletem gotowym do rozbudowy o:
+- Szczegółowy tracking treningów (serie, powtórzenia, ciężar)
+- Wykresy progresu i statystyki
+- Zdjęcia i notatki do ćwiczeń
+- Timery i stopery treningowe
+- Export/import danych
+- Synchronizacja z cloud (Supabase/Firebase)
+- Integracja z wearables
+
+## 📄 Licencja
+
+MIT
+
+## 🤝 Wkład w projekt
+
+Pull requesty są mile widziane! Dla większych zmian, proszę najpierw otwórz issue.
