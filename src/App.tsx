@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import MuscleMap from "./pages/MuscleMap";
 import Exercises from "./pages/Exercises";
+import ExerciseDetail from "./pages/ExerciseDetail";
 import Plan from "./pages/Plan";
 import History from "./pages/History";
 import Weight from "./pages/Weight";
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/" element={<Home />} />
           <Route path="/muscle-map" element={<MuscleMap />} />
           <Route path="/exercises" element={<Exercises />} />
+          <Route path="/exercise/:id" element={<ExerciseDetail />} />
           <Route path="/plan" element={<Plan />} />
           <Route path="/history" element={<History />} />
           <Route path="/weight" element={<Weight />} />
