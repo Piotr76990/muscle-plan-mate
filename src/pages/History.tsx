@@ -1,4 +1,5 @@
 import { Header } from '@/components/Header';
+import { BackButton } from '@/components/BackButton';
 import { TrendingUp, CheckCircle2 } from 'lucide-react';
 
 const History = () => {
@@ -12,6 +13,10 @@ const History = () => {
   return (
     <div className="min-h-screen pb-20 md:pb-0">
       <Header title="Historia i progres" />
+      
+      <div className="container mx-auto px-4 pt-4">
+        <BackButton />
+      </div>
 
       <main className="container mx-auto px-4 py-6">
         <div className="max-w-2xl mx-auto">
