@@ -1,4 +1,5 @@
 import { Header } from '@/components/Header';
+import { BackButton } from '@/components/BackButton';
 import { getMuscleGroups, getMuscleDisplayName } from '@/data/exercises.sample';
 import { useNavigate } from 'react-router-dom';
 import { Dumbbell } from 'lucide-react';
@@ -10,6 +11,10 @@ const MuscleMap = () => {
   return (
     <div className="min-h-screen pb-20 md:pb-0">
       <Header title="Mapa mięśni" />
+      
+      <div className="container mx-auto px-4 pt-4">
+        <BackButton />
+      </div>
 
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">

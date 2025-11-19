@@ -1,4 +1,5 @@
 import { Header } from '@/components/Header';
+import { BackButton } from '@/components/BackButton';
 import { ExerciseCard } from '@/components/ExerciseCard';
 import { Modal } from '@/components/Modal';
 import { getExercisesByMuscle, getMuscleDisplayName, Exercise } from '@/data/exercises.sample';
@@ -16,18 +17,13 @@ const Exercises = () => {
   return (
     <div className="min-h-screen pb-20 md:pb-0">
       <Header title={getMuscleDisplayName(muscle)} />
+      
+      <div className="container mx-auto px-4 pt-4">
+        <BackButton />
+      </div>
 
       <main className="container mx-auto px-4 py-6">
         <div className="max-w-2xl mx-auto">
-          <div className="mb-6 flex items-center gap-4">
-            <Link
-              to="/muscle-map"
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-smooth"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm">Wróć do mapy</span>
-            </Link>
-          </div>
 
           {exercises.length === 0 ? (
             <div className="text-center py-12">
