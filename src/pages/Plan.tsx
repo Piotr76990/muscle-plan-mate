@@ -3,6 +3,7 @@ import { BackButton } from '@/components/BackButton';
 import { Modal } from '@/components/Modal';
 import { Calendar, Plus, Trash2, X, ArrowUp, ArrowDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { sampleExercises, getExercisesByMuscle } from '@/data/exercises.sample';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,7 @@ interface Training {
 const STORAGE_KEY = 'plan_v1';
 
 const Plan = () => {
+  const navigate = useNavigate();
   const daysOfWeek = [
     'Poniedziałek',
     'Wtorek',
@@ -152,6 +154,7 @@ const Plan = () => {
     }
 
     setIsModalOpen(false);
+    navigate('/plan', { replace: true });
   };
 
   const handleDeleteTraining = (trainingId: string) => {
