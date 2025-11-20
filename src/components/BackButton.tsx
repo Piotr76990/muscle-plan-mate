@@ -5,11 +5,23 @@ export const BackButton = () => {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    if (window.history.length > 1) {
-      navigate(-1);
-    } else {
+    // If no history, go home immediately
+    if (window.history.length <= 1) {
       navigate('/');
+      return;
     }
+
+    // Try to go back, but verify it worked
+    const currentPath = window.location.pathname;
+    navigate(-1);
+
+    // Check after 120ms if URL actually changed
+    setTimeout(() => {
+      if (window.location.pathname === currentPath) {
+        // Navigate didn't work, go home
+        navigate('/');
+      }
+    }, 120);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

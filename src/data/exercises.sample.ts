@@ -85,6 +85,29 @@ export const sampleExercises: Exercise[] = [
     equipment: 'Hantle',
   },
 
+  // Przedramiona
+  {
+    id: 'forearms-1',
+    name: 'Uginanie nadgarstków ze sztangą',
+    muscle: 'przedramie',
+    description: 'Ćwiczenie na wewnętrzną część przedramion. Oprzyj przedramiona na ławce, uginaj nadgarstki.',
+    equipment: 'Sztanga, ławka',
+  },
+  {
+    id: 'forearms-2',
+    name: 'Zwijanie nadgarstków odwrotnym chwytem',
+    muscle: 'przedramie',
+    description: 'Ćwiczenie na zewnętrzną część przedramion. Użyj odwrotnego chwytu.',
+    equipment: 'Sztanga',
+  },
+  {
+    id: 'forearms-3',
+    name: 'Farmer\'s Walk',
+    muscle: 'przedramie',
+    description: 'Chwyć ciężkie hantle i chodź z nimi. Rozwija siłę chwytu i przedramion.',
+    equipment: 'Hantle',
+  },
+
   // Triceps
   {
     id: 'triceps-1',
@@ -197,6 +220,7 @@ export const getMuscleDisplayName = (muscle: string): string => {
     plecy: 'Plecy',
     barki: 'Barki',
     biceps: 'Biceps',
+    przedramie: 'Przedramiona',
     triceps: 'Triceps',
     brzuch: 'Brzuch',
     czworoglowy: 'Czworogłowy uda',
