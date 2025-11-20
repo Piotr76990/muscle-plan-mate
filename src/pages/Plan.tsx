@@ -8,8 +8,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface Exercise {
   id: string;
@@ -47,6 +53,7 @@ const Plan = () => {
   const [trainingName, setTrainingName] = useState('');
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
   const [exerciseSets, setExerciseSets] = useState<Record<string, string>>({});
+  const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<string>('klatka');
   
   // Muscle groups in desired order
   const muscleGroups = [
@@ -54,6 +61,7 @@ const Plan = () => {
     { id: 'plecy', name: 'Plecy' },
     { id: 'barki', name: 'Barki' },
     { id: 'biceps', name: 'Biceps' },
+    { id: 'przedramie', name: 'Przedramię' },
     { id: 'uda', name: 'Uda', subGroups: ['czworoglowy', 'dwuglowy'] },
     { id: 'lydki', name: 'Łydki' },
     { id: 'brzuch', name: 'Brzuch' },
@@ -82,6 +90,7 @@ const Plan = () => {
     setTrainingName('');
     setSelectedExercises([]);
     setExerciseSets({});
+    setSelectedMuscleGroup('klatka');
     setEditingTraining(null);
     setIsModalOpen(true);
   };
@@ -300,58 +309,64 @@ const Plan = () => {
             />
           </div>
 
-          {/* Exercise Selection with Tabs and Selected Panel */}
+          {/* Exercise Selection with Dropdown and Selected Panel */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Left: Exercise Tabs */}
+            {/* Left: Exercise Selection */}
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Wybierz ćwiczenia
+                Wybierz ćwiczenia:
               </label>
-              <Tabs defaultValue="klatka" className="w-full">
-                <TabsList className="w-full overflow-x-auto flex-nowrap justify-start">
+              
+              {/* Muscle Group Dropdown */}
+              <Select value={selectedMuscleGroup} onValueChange={setSelectedMuscleGroup}>
+                <SelectTrigger className="w-full mb-3">
+                  <SelectValue placeholder="Wybierz kategorię" />
+                </SelectTrigger>
+                <SelectContent>
                   {muscleGroups.map(group => (
-                    <TabsTrigger key={group.id} value={group.id}>
+                    <SelectItem key={group.id} value={group.id}>
                       {group.name}
-                    </TabsTrigger>
+                    </SelectItem>
                   ))}
-                </TabsList>
-                {muscleGroups.map(group => (
-                  <TabsContent key={group.id} value={group.id} className="mt-2">
-                    <div className="max-h-64 overflow-y-auto space-y-2 border border-border rounded-lg p-3">
-                      {getExercisesForGroup(group.id, group.subGroups).map(exercise => (
-                        <div key={exercise.id} className="space-y-2">
-                          <div className="flex items-start gap-2">
-                            <Checkbox
-                              checked={selectedExercises.includes(exercise.id)}
-                              onCheckedChange={() => toggleExercise(exercise.id)}
-                              className="mt-1"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <label className="text-sm text-foreground cursor-pointer block">
-                                {exercise.name}
-                              </label>
-                              <div className="flex gap-1 mt-1">
-                                <Badge variant="outline" className="text-xs">
-                                  {exercise.equipment}
-                                </Badge>
-                              </div>
-                            </div>
-                          </div>
-                          {selectedExercises.includes(exercise.id) && (
-                            <Input
-                              type="text"
-                              value={exerciseSets[exercise.id] || ''}
-                              onChange={(e) => setExerciseSets({ ...exerciseSets, [exercise.id]: e.target.value })}
-                              placeholder="np. 3x10 80kg"
-                              className="ml-6 text-sm"
-                            />
-                          )}
+                </SelectContent>
+              </Select>
+
+              {/* Exercise List */}
+              <div className="max-h-64 overflow-y-auto space-y-2 border border-border rounded-lg p-3">
+                {getExercisesForGroup(
+                  selectedMuscleGroup,
+                  muscleGroups.find(g => g.id === selectedMuscleGroup)?.subGroups
+                ).map(exercise => (
+                  <div key={exercise.id} className="space-y-2">
+                    <div className="flex items-start gap-2">
+                      <Checkbox
+                        checked={selectedExercises.includes(exercise.id)}
+                        onCheckedChange={() => toggleExercise(exercise.id)}
+                        className="mt-1"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <label className="text-sm text-foreground cursor-pointer block">
+                          {exercise.name}
+                        </label>
+                        <div className="flex gap-1 mt-1">
+                          <Badge variant="outline" className="text-xs">
+                            {exercise.equipment}
+                          </Badge>
                         </div>
-                      ))}
+                      </div>
                     </div>
-                  </TabsContent>
+                    {selectedExercises.includes(exercise.id) && (
+                      <Input
+                        type="text"
+                        value={exerciseSets[exercise.id] || ''}
+                        onChange={(e) => setExerciseSets({ ...exerciseSets, [exercise.id]: e.target.value })}
+                        placeholder="np. 3x10 80kg"
+                        className="ml-6 text-sm"
+                      />
+                    )}
+                  </div>
                 ))}
-              </Tabs>
+              </div>
             </div>
 
             {/* Right: Selected Exercises Panel */}
