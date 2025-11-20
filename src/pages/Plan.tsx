@@ -1,13 +1,15 @@
 import { Header } from '@/components/Header';
 import { BackButton } from '@/components/BackButton';
 import { Modal } from '@/components/Modal';
-import { Calendar, Plus, Trash2, X } from 'lucide-react';
+import { Calendar, Plus, Trash2, X, ArrowUp, ArrowDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { sampleExercises } from '@/data/exercises.sample';
+import { sampleExercises, getExercisesByMuscle } from '@/data/exercises.sample';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 
 interface Exercise {
   id: string;
@@ -43,8 +45,19 @@ const Plan = () => {
   
   // Form state
   const [trainingName, setTrainingName] = useState('');
-  const [selectedExercises, setSelectedExercises] = useState<Set<string>>(new Set());
+  const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
   const [exerciseSets, setExerciseSets] = useState<Record<string, string>>({});
+  
+  // Muscle groups in desired order
+  const muscleGroups = [
+    { id: 'klatka', name: 'Klatka' },
+    { id: 'plecy', name: 'Plecy' },
+    { id: 'barki', name: 'Barki' },
+    { id: 'biceps', name: 'Biceps' },
+    { id: 'uda', name: 'Uda', subGroups: ['czworoglowy', 'dwuglowy'] },
+    { id: 'lydki', name: 'Łydki' },
+    { id: 'brzuch', name: 'Brzuch' },
+  ];
 
   // Load trainings from localStorage
   useEffect(() => {
@@ -67,7 +80,7 @@ const Plan = () => {
   const openNewTrainingModal = (day?: string) => {
     setSelectedDay(day || 'Poniedziałek');
     setTrainingName('');
-    setSelectedExercises(new Set());
+    setSelectedExercises([]);
     setExerciseSets({});
     setEditingTraining(null);
     setIsModalOpen(true);
@@ -76,7 +89,7 @@ const Plan = () => {
   const openEditTrainingModal = (training: Training) => {
     setSelectedDay(training.day);
     setTrainingName(training.name);
-    const exerciseIds = new Set(training.exercises.map(e => e.id));
+    const exerciseIds = training.exercises.map(e => e.id);
     setSelectedExercises(exerciseIds);
     const sets: Record<string, string> = {};
     training.exercises.forEach(e => {
@@ -93,12 +106,12 @@ const Plan = () => {
       return;
     }
 
-    if (selectedExercises.size === 0) {
+    if (selectedExercises.length === 0) {
       toast.error('Wybierz co najmniej jedno ćwiczenie');
       return;
     }
 
-    const exercises: Exercise[] = Array.from(selectedExercises).map(id => {
+    const exercises: Exercise[] = selectedExercises.map(id => {
       const exercise = sampleExercises.find(e => e.id === id);
       return {
         id,
@@ -140,24 +153,49 @@ const Plan = () => {
   };
 
   const toggleExercise = (exerciseId: string) => {
-    const newSelected = new Set(selectedExercises);
-    if (newSelected.has(exerciseId)) {
-      newSelected.delete(exerciseId);
+    if (selectedExercises.includes(exerciseId)) {
+      // Remove from selected
+      setSelectedExercises(selectedExercises.filter(id => id !== exerciseId));
       const newSets = { ...exerciseSets };
       delete newSets[exerciseId];
       setExerciseSets(newSets);
     } else {
-      newSelected.add(exerciseId);
+      // Add to selected (at the end)
+      setSelectedExercises([...selectedExercises, exerciseId]);
     }
+  };
+
+  const moveExerciseUp = (index: number) => {
+    if (index === 0) return;
+    const newSelected = [...selectedExercises];
+    [newSelected[index - 1], newSelected[index]] = [newSelected[index], newSelected[index - 1]];
     setSelectedExercises(newSelected);
+  };
+
+  const moveExerciseDown = (index: number) => {
+    if (index === selectedExercises.length - 1) return;
+    const newSelected = [...selectedExercises];
+    [newSelected[index], newSelected[index + 1]] = [newSelected[index + 1], newSelected[index]];
+    setSelectedExercises(newSelected);
+  };
+
+  const removeExercise = (exerciseId: string) => {
+    setSelectedExercises(selectedExercises.filter(id => id !== exerciseId));
+    const newSets = { ...exerciseSets };
+    delete newSets[exerciseId];
+    setExerciseSets(newSets);
+  };
+
+  const getExercisesForGroup = (groupId: string, subGroups?: string[]) => {
+    if (subGroups) {
+      return sampleExercises.filter(ex => subGroups.includes(ex.muscle));
+    }
+    return getExercisesByMuscle(groupId);
   };
 
   const getDayTrainings = (day: string) => {
     return trainings.filter(t => t.day === day);
   };
-
-  // Get top 12 most common exercises for quick selection
-  const popularExercises = sampleExercises.slice(0, 12);
 
   return (
     <div className="min-h-screen pb-20 md:pb-0">
@@ -262,34 +300,124 @@ const Plan = () => {
             />
           </div>
 
-          {/* Exercise Selection */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Wybierz ćwiczenia
-            </label>
-            <div className="max-h-64 overflow-y-auto space-y-2 border border-border rounded-lg p-3">
-              {popularExercises.map(exercise => (
-                <div key={exercise.id} className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      checked={selectedExercises.has(exercise.id)}
-                      onCheckedChange={() => toggleExercise(exercise.id)}
-                    />
-                    <label className="text-sm text-foreground flex-1 cursor-pointer">
-                      {exercise.name}
-                    </label>
+          {/* Exercise Selection with Tabs and Selected Panel */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Left: Exercise Tabs */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Wybierz ćwiczenia
+              </label>
+              <Tabs defaultValue="klatka" className="w-full">
+                <TabsList className="w-full overflow-x-auto flex-nowrap justify-start">
+                  {muscleGroups.map(group => (
+                    <TabsTrigger key={group.id} value={group.id}>
+                      {group.name}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+                {muscleGroups.map(group => (
+                  <TabsContent key={group.id} value={group.id} className="mt-2">
+                    <div className="max-h-64 overflow-y-auto space-y-2 border border-border rounded-lg p-3">
+                      {getExercisesForGroup(group.id, group.subGroups).map(exercise => (
+                        <div key={exercise.id} className="space-y-2">
+                          <div className="flex items-start gap-2">
+                            <Checkbox
+                              checked={selectedExercises.includes(exercise.id)}
+                              onCheckedChange={() => toggleExercise(exercise.id)}
+                              className="mt-1"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <label className="text-sm text-foreground cursor-pointer block">
+                                {exercise.name}
+                              </label>
+                              <div className="flex gap-1 mt-1">
+                                <Badge variant="outline" className="text-xs">
+                                  {exercise.equipment}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                          {selectedExercises.includes(exercise.id) && (
+                            <Input
+                              type="text"
+                              value={exerciseSets[exercise.id] || ''}
+                              onChange={(e) => setExerciseSets({ ...exerciseSets, [exercise.id]: e.target.value })}
+                              placeholder="np. 3x10 80kg"
+                              className="ml-6 text-sm"
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </TabsContent>
+                ))}
+              </Tabs>
+            </div>
+
+            {/* Right: Selected Exercises Panel */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-foreground">
+                  Wybrane ćwiczenia
+                </label>
+                <span className="text-xs text-muted-foreground">
+                  Wybrano {selectedExercises.length}
+                </span>
+              </div>
+              <div className="border border-border rounded-lg p-3 min-h-[200px] max-h-64 overflow-y-auto">
+                {selectedExercises.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    Brak wybranych ćwiczeń
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {selectedExercises.map((exerciseId, index) => {
+                      const exercise = sampleExercises.find(e => e.id === exerciseId);
+                      return (
+                        <div key={exerciseId} className="flex items-start gap-2 bg-muted/50 rounded-lg p-2">
+                          <div className="flex flex-col gap-1">
+                            <button
+                              onClick={() => moveExerciseUp(index)}
+                              disabled={index === 0}
+                              className="w-6 h-6 flex items-center justify-center rounded hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-smooth"
+                              aria-label="Przesuń w górę"
+                            >
+                              <ArrowUp className="w-3 h-3" />
+                            </button>
+                            <button
+                              onClick={() => moveExerciseDown(index)}
+                              disabled={index === selectedExercises.length - 1}
+                              className="w-6 h-6 flex items-center justify-center rounded hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-smooth"
+                              aria-label="Przesuń w dół"
+                            >
+                              <ArrowDown className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground">
+                              {exercise?.name}
+                            </p>
+                            <Input
+                              type="text"
+                              value={exerciseSets[exerciseId] || ''}
+                              onChange={(e) => setExerciseSets({ ...exerciseSets, [exerciseId]: e.target.value })}
+                              placeholder="np. 3x10 80kg"
+                              className="mt-1 text-xs h-8"
+                            />
+                          </div>
+                          <button
+                            onClick={() => removeExercise(exerciseId)}
+                            className="w-6 h-6 flex items-center justify-center rounded hover:bg-destructive/20 transition-smooth"
+                            aria-label="Usuń ćwiczenie"
+                          >
+                            <X className="w-4 h-4 text-destructive" />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
-                  {selectedExercises.has(exercise.id) && (
-                    <Input
-                      type="text"
-                      value={exerciseSets[exercise.id] || ''}
-                      onChange={(e) => setExerciseSets({ ...exerciseSets, [exercise.id]: e.target.value })}
-                      placeholder="np. 3x10"
-                      className="ml-6 text-sm"
-                    />
-                  )}
-                </div>
-              ))}
+                )}
+              </div>
             </div>
           </div>
 
