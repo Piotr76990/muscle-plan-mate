@@ -1,14 +1,58 @@
 import { Header } from '@/components/Header';
 import { BackButton } from '@/components/BackButton';
-import { TrendingUp, CheckCircle2 } from 'lucide-react';
+import { Modal } from '@/components/Modal';
+import { TrendingUp, CheckCircle2, Trash2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { getAllWorkouts, deleteWorkoutById, type Workout } from '@/utils/storage';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { toast } from '@/hooks/use-toast';
 
 const History = () => {
-  // Mock data for completed workouts
-  const recentWorkouts = [
-    { id: 1, date: '2025-11-16', title: 'Trening klatki', exercises: 5, duration: '45 min' },
-    { id: 2, date: '2025-11-14', title: 'Trening pleców', exercises: 6, duration: '50 min' },
-    { id: 3, date: '2025-11-12', title: 'Trening nóg', exercises: 4, duration: '55 min' },
-  ];
+  const [workouts, setWorkouts] = useState<Workout[]>([]);
+  const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
+  const [workoutToDelete, setWorkoutToDelete] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadWorkouts();
+  }, []);
+
+  const loadWorkouts = () => {
+    const data = getAllWorkouts();
+    // Sort by date descending
+    const sorted = data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    setWorkouts(sorted);
+  };
+
+  const handleDeleteWorkout = () => {
+    if (!workoutToDelete) return;
+    
+    deleteWorkoutById(workoutToDelete);
+    loadWorkouts();
+    setWorkoutToDelete(null);
+    
+    toast({
+      title: 'Usunięto trening',
+      description: 'Trening został pomyślnie usunięty z historii.',
+    });
+  };
+
+  const handleOpenDetails = (workout: Workout) => {
+    setSelectedWorkout(workout);
+  };
+
+  const handleCloseDetails = () => {
+    setSelectedWorkout(null);
+  };
 
   return (
     <div className="min-h-screen pb-20 md:pb-0">
@@ -44,7 +88,7 @@ const History = () => {
           <div className="mb-6">
             <h2 className="text-lg font-bold text-foreground mb-4">Ostatnie treningi</h2>
             
-            {recentWorkouts.length === 0 ? (
+            {workouts.length === 0 ? (
               <div className="text-center py-12 bg-muted/50 rounded-lg border border-border">
                 <p className="text-muted-foreground">
                   Brak zapisanych treningów. Rozpocznij swój pierwszy trening!
@@ -52,20 +96,45 @@ const History = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {recentWorkouts.map((workout) => (
+                {workouts.map((workout) => (
                   <div
                     key={workout.id}
-                    className="bg-card border border-border rounded-lg p-4 hover:border-primary transition-smooth cursor-pointer"
+                    className="bg-card border border-border rounded-lg p-4 hover:border-primary transition-smooth flex items-start justify-between gap-3"
                   >
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold text-foreground">{workout.title}</h3>
-                      <span className="text-xs text-muted-foreground">{workout.date}</span>
+                    <div 
+                      className="flex-1 cursor-pointer"
+                      onClick={() => handleOpenDetails(workout)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => e.key === 'Enter' && handleOpenDetails(workout)}
+                      aria-label={`Otwórz szczegóły treningu ${workout.title}`}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-semibold text-foreground">{workout.title}</h3>
+                        <span className="text-xs text-muted-foreground">{workout.date}</span>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span>{workout.exercises.length} ćwiczeń</span>
+                        {workout.duration && (
+                          <>
+                            <span>•</span>
+                            <span>{workout.duration}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>{workout.exercises} ćwiczeń</span>
-                      <span>•</span>
-                      <span>{workout.duration}</span>
-                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setWorkoutToDelete(workout.id);
+                      }}
+                      aria-label="Usuń trening"
+                      className="flex-shrink-0 hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -80,6 +149,73 @@ const History = () => {
           </div>
         </div>
       </main>
+
+      {/* Details Modal */}
+      {selectedWorkout && (
+        <Modal
+          isOpen={!!selectedWorkout}
+          onClose={handleCloseDetails}
+          title="Szczegóły treningu"
+        >
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-bold text-foreground">{selectedWorkout.title}</h3>
+              <p className="text-sm text-muted-foreground">{selectedWorkout.date}</p>
+              {selectedWorkout.duration && (
+                <p className="text-sm text-muted-foreground">Czas trwania: {selectedWorkout.duration}</p>
+              )}
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-foreground mb-3">Ćwiczenia:</h4>
+              <div className="space-y-3">
+                {selectedWorkout.exercises.map((exercise, idx) => (
+                  <div key={idx} className="bg-muted/30 rounded-lg p-3 border border-border">
+                    <p className="font-medium text-foreground mb-1">{exercise.name}</p>
+                    {exercise.setsText && (
+                      <p className="text-sm text-muted-foreground">{exercise.setsText}</p>
+                    )}
+                    {exercise.sets && exercise.sets.length > 0 && (
+                      <div className="text-sm text-muted-foreground space-y-1 mt-2">
+                        {exercise.sets.map((set, setIdx) => (
+                          <div key={setIdx}>
+                            Seria {setIdx + 1}: {set.reps} powtórzeń × {set.weight} kg
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Button 
+              onClick={handleCloseDetails} 
+              className="w-full"
+            >
+              Zamknij
+            </Button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!workoutToDelete} onOpenChange={(open) => !open && setWorkoutToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Usunąć trening?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ta operacja jest nieodwracalna. Trening zostanie trwale usunięty z historii.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteWorkout}>
+              Usuń
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
