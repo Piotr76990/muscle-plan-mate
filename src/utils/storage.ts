@@ -58,6 +58,22 @@ export interface Workout {
     sets?: Array<{ reps: number; weight: number }>;
   }>;
   duration?: string;
+  fromDay?: string;
+  notes?: string;
+}
+
+// Plan helpers
+export interface Plan {
+  id: string;
+  day: string;
+  name: string;
+  exercises: Array<{
+    id: string;
+    name: string;
+    setsText?: string;
+  }>;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export const getAllWorkouts = (): Workout[] => {
@@ -74,4 +90,49 @@ export const deleteWorkoutById = (id: string): void => {
   const workouts = getAllWorkouts();
   const filtered = workouts.filter(w => w.id !== id);
   storage.setItem(STORAGE_KEYS.WORKOUTS, filtered);
+};
+
+// Plan management
+export const getAllPlans = (): Plan[] => {
+  const plans = storage.getItem<Plan[]>(STORAGE_KEYS.PLAN);
+  return plans || [];
+};
+
+export const getPlanForDay = (day: string): Plan | null => {
+  const plans = getAllPlans();
+  return plans.find(p => p.day === day) || null;
+};
+
+export const deletePlanForDay = (day: string): void => {
+  const plans = getAllPlans();
+  const filtered = plans.filter(p => p.day !== day);
+  storage.setItem(STORAGE_KEYS.PLAN, filtered);
+};
+
+// Move plan to history
+export const movePlanToHistory = (day: string): boolean => {
+  const plan = getPlanForDay(day);
+  if (!plan) return false;
+
+  // Create workout from plan
+  const workout: Workout = {
+    id: Date.now().toString(),
+    date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+    title: plan.name,
+    exercises: plan.exercises.map(ex => ({
+      id: ex.id,
+      name: ex.name,
+      setsText: ex.setsText,
+    })),
+    fromDay: plan.day,
+  };
+
+  // Save to workouts
+  const workouts = getAllWorkouts();
+  storage.setItem(STORAGE_KEYS.WORKOUTS, [...workouts, workout]);
+
+  // Remove from plan
+  deletePlanForDay(day);
+
+  return true;
 };

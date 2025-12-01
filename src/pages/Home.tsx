@@ -18,8 +18,8 @@ const Home = () => {
       to: '/plan',
     },
     {
-      title: 'Historia i progres',
-      description: 'Śledź swoje osiągnięcia i postępy',
+      title: 'Treningi historyczne',
+      description: 'Przeglądaj wykonane treningi i progres',
       icon: TrendingUp,
       to: '/history',
     },
