@@ -9,7 +9,6 @@ const Home = () => {
       description: 'Przeglądaj ćwiczenia według grup mięśniowych',
       icon: Flame,
       to: '/muscle-map',
-      gradient: true,
     },
     {
       title: 'Plan treningowy',
