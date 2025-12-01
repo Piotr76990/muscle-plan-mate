@@ -45,3 +45,33 @@ export const STORAGE_KEYS = {
   PLAN: 'plan_v1',
   WEIGHTS: 'weights_v1',
 } as const;
+
+// Workout helpers
+export interface Workout {
+  id: string;
+  date: string;
+  title: string;
+  exercises: Array<{
+    id: string;
+    name: string;
+    setsText?: string;
+    sets?: Array<{ reps: number; weight: number }>;
+  }>;
+  duration?: string;
+}
+
+export const getAllWorkouts = (): Workout[] => {
+  const workouts = storage.getItem<Workout[]>(STORAGE_KEYS.WORKOUTS);
+  return workouts || [];
+};
+
+export const getWorkoutById = (id: string): Workout | null => {
+  const workouts = getAllWorkouts();
+  return workouts.find(w => w.id === id) || null;
+};
+
+export const deleteWorkoutById = (id: string): void => {
+  const workouts = getAllWorkouts();
+  const filtered = workouts.filter(w => w.id !== id);
+  storage.setItem(STORAGE_KEYS.WORKOUTS, filtered);
+};
