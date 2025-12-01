@@ -36,7 +36,7 @@ const Home = () => {
       <Header />
       
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-[560px] mx-auto">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-foreground mb-2">
               Witaj w GymTracker
@@ -46,20 +46,10 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="flex flex-col gap-4">
             {mainCards.map((card) => (
               <Card key={card.to} {...card} />
             ))}
-          </div>
-
-          <div className="mt-8 p-6 bg-muted/50 rounded-xl border border-border">
-            <h3 className="font-semibold text-foreground mb-2">💡 Szybki start</h3>
-            <ul className="text-sm text-muted-foreground space-y-2">
-              <li>• Zacznij od przeglądu mapy mięśni i wyboru ćwiczeń</li>
-              <li>• Stwórz swój pierwszy plan treningowy</li>
-              <li>• Zapisuj wykonane treningi w historii</li>
-              <li>• Śledź swoją wagę i postępy</li>
-            </ul>
           </div>
         </div>
       </main>
