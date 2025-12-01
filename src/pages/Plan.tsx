@@ -1,7 +1,7 @@
 import { Header } from '@/components/Header';
 import { BackButton } from '@/components/BackButton';
 import { Modal } from '@/components/Modal';
-import { Calendar, Plus, Trash2, X, ArrowUp, ArrowDown } from 'lucide-react';
+import { Calendar, Plus, Trash2, X, ArrowUp, ArrowDown, Eye, Edit2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { sampleExercises, getExercisesByMuscle } from '@/data/exercises.sample';
@@ -10,6 +10,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   Select,
   SelectContent,
@@ -30,6 +40,7 @@ interface Training {
   name: string;
   exercises: Exercise[];
   createdAt: string;
+  updatedAt: string;
 }
 
 const STORAGE_KEY = 'plan_v1';
@@ -47,9 +58,12 @@ const Plan = () => {
   ];
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState<string>('Poniedziałek');
   const [trainings, setTrainings] = useState<Training[]>([]);
   const [editingTraining, setEditingTraining] = useState<Training | null>(null);
+  const [previewTraining, setPreviewTraining] = useState<Training | null>(null);
   
   // Form state
   const [trainingName, setTrainingName] = useState('');
@@ -97,17 +111,24 @@ const Plan = () => {
     setIsModalOpen(true);
   };
 
-  const openEditTrainingModal = (training: Training) => {
-    setSelectedDay(training.day);
-    setTrainingName(training.name);
-    const exerciseIds = training.exercises.map(e => e.id);
+  const openPreviewModal = (training: Training) => {
+    setPreviewTraining(training);
+    setIsPreviewOpen(true);
+  };
+
+  const openEditFromPreview = () => {
+    if (!previewTraining) return;
+    setIsPreviewOpen(false);
+    setSelectedDay(previewTraining.day);
+    setTrainingName(previewTraining.name);
+    const exerciseIds = previewTraining.exercises.map(e => e.id);
     setSelectedExercises(exerciseIds);
     const sets: Record<string, string> = {};
-    training.exercises.forEach(e => {
+    previewTraining.exercises.forEach(e => {
       if (e.setsText) sets[e.id] = e.setsText;
     });
     setExerciseSets(sets);
-    setEditingTraining(training);
+    setEditingTraining(previewTraining);
     setIsModalOpen(true);
   };
 
@@ -135,21 +156,32 @@ const Plan = () => {
       // Update existing training
       const updated = trainings.map(t => 
         t.id === editingTraining.id 
-          ? { ...editingTraining, day: selectedDay, name: trainingName, exercises }
+          ? { ...editingTraining, day: selectedDay, name: trainingName, exercises, updatedAt: new Date().toISOString() }
           : t
       );
       saveTrainings(updated);
       toast.success('Trening zaktualizowany');
     } else {
-      // Create new training
+      // Create new training - replace existing for the day if any
+      const existingIndex = trainings.findIndex(t => t.day === selectedDay);
       const newTraining: Training = {
         id: Date.now().toString(),
         day: selectedDay,
         name: trainingName,
         exercises,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
-      saveTrainings([...trainings, newTraining]);
+      
+      if (existingIndex >= 0) {
+        // Replace existing training for this day
+        const updated = [...trainings];
+        updated[existingIndex] = newTraining;
+        saveTrainings(updated);
+      } else {
+        // Add new training
+        saveTrainings([...trainings, newTraining]);
+      }
       toast.success('Trening dodany');
     }
 
@@ -157,11 +189,19 @@ const Plan = () => {
     navigate('/plan', { replace: true });
   };
 
-  const handleDeleteTraining = (trainingId: string) => {
-    const updated = trainings.filter(t => t.id !== trainingId);
+  const confirmDeleteTraining = () => {
+    if (!previewTraining) return;
+    const updated = trainings.filter(t => t.id !== previewTraining.id);
     saveTrainings(updated);
     toast.success('Trening usunięty');
-    setIsModalOpen(false);
+    setIsDeleteDialogOpen(false);
+    setIsPreviewOpen(false);
+    setPreviewTraining(null);
+  };
+
+  // CRUD helpers
+  const getPlanForDay = (day: string): Training | null => {
+    return trainings.find(t => t.day === day) || null;
   };
 
   const toggleExercise = (exerciseId: string) => {
@@ -238,7 +278,7 @@ const Plan = () => {
               return (
                 <div
                   key={day}
-                  onClick={() => hasTraining ? openEditTrainingModal(dayTrainings[0]) : openNewTrainingModal(day)}
+                  onClick={() => hasTraining ? openPreviewModal(dayTrainings[0]) : openNewTrainingModal(day)}
                   className="bg-card border border-border rounded-lg p-4 hover:border-primary transition-smooth cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
@@ -456,7 +496,7 @@ const Plan = () => {
             </Button>
             {editingTraining && (
               <Button
-                onClick={() => handleDeleteTraining(editingTraining.id)}
+                onClick={() => setIsDeleteDialogOpen(true)}
                 variant="destructive"
                 size="icon"
               >
@@ -466,6 +506,76 @@ const Plan = () => {
           </div>
         </div>
       </Modal>
+
+      {/* Preview Modal */}
+      <Modal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        title="Szczegóły treningu"
+      >
+        {previewTraining && (
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-bold text-foreground">{previewTraining.name}</h3>
+              <p className="text-sm text-muted-foreground">{previewTraining.day}</p>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-semibold text-foreground mb-2">Ćwiczenia:</h4>
+              <div className="space-y-2">
+                {previewTraining.exercises.map((exercise, index) => (
+                  <div key={exercise.id} className="bg-muted/50 rounded-lg p-3">
+                    <div className="flex items-start gap-2">
+                      <span className="text-xs font-bold text-muted-foreground mt-0.5">
+                        {index + 1}.
+                      </span>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-foreground">{exercise.name}</p>
+                        {exercise.setsText && (
+                          <p className="text-xs text-muted-foreground mt-1">{exercise.setsText}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button onClick={openEditFromPreview} className="flex-1">
+                <Edit2 className="w-4 h-4 mr-2" />
+                Edytuj
+              </Button>
+              <Button
+                onClick={() => setIsDeleteDialogOpen(true)}
+                variant="destructive"
+                className="flex-1"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Usuń
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Na pewno usunąć trening?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ta akcja nie może być cofnięta. Trening "{previewTraining?.name}" zostanie trwale usunięty z planu.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteTraining}>
+              Usuń
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
