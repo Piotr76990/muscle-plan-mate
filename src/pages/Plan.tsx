@@ -1,9 +1,10 @@
 import { Header } from '@/components/Header';
 import { BackButton } from '@/components/BackButton';
 import { Modal } from '@/components/Modal';
-import { Calendar, Plus, Trash2, X, ArrowUp, ArrowDown, Eye, Edit2 } from 'lucide-react';
+import { Calendar, Plus, Trash2, X, ArrowUp, ArrowDown, Eye, Edit2, CheckCircle2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { movePlanToHistory } from '@/utils/storage';
 import { sampleExercises, getExercisesByMuscle } from '@/data/exercises.sample';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -60,6 +61,7 @@ const Plan = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState<string>('Poniedziałek');
   const [trainings, setTrainings] = useState<Training[]>([]);
   const [editingTraining, setEditingTraining] = useState<Training | null>(null);
@@ -197,6 +199,27 @@ const Plan = () => {
     setIsDeleteDialogOpen(false);
     setIsPreviewOpen(false);
     setPreviewTraining(null);
+  };
+
+  const confirmCompleteTraining = () => {
+    if (!previewTraining) return;
+    
+    const success = movePlanToHistory(previewTraining.day);
+    
+    if (success) {
+      // Reload trainings from localStorage
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        setTrainings(JSON.parse(stored));
+      }
+      
+      toast.success('Trening oznaczony jako wykonany');
+      setIsCompleteDialogOpen(false);
+      setIsPreviewOpen(false);
+      setPreviewTraining(null);
+    } else {
+      toast.error('Nie udało się przenieść treningu');
+    }
   };
 
   // CRUD helpers
@@ -541,19 +564,28 @@ const Plan = () => {
               </div>
             </div>
 
-            <div className="flex gap-2 pt-4">
-              <Button onClick={openEditFromPreview} className="flex-1">
-                <Edit2 className="w-4 h-4 mr-2" />
-                Edytuj
-              </Button>
-              <Button
-                onClick={() => setIsDeleteDialogOpen(true)}
-                variant="destructive"
-                className="flex-1"
+            <div className="flex flex-col gap-2 pt-4">
+              <Button 
+                onClick={() => setIsCompleteDialogOpen(true)}
+                className="w-full bg-success hover:bg-success/90 text-white"
               >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Usuń
+                <CheckCircle2 className="w-4 h-4 mr-2" />
+                Wykonane
               </Button>
+              <div className="flex gap-2">
+                <Button onClick={openEditFromPreview} variant="outline" className="flex-1">
+                  <Edit2 className="w-4 h-4 mr-2" />
+                  Edytuj
+                </Button>
+                <Button
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  variant="destructive"
+                  className="flex-1"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Usuń
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -572,6 +604,27 @@ const Plan = () => {
             <AlertDialogCancel>Anuluj</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDeleteTraining}>
               Usuń
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Complete Training Confirmation Dialog */}
+      <AlertDialog open={isCompleteDialogOpen} onOpenChange={setIsCompleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Oznaczyć trening jako wykonany?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Trening "{previewTraining?.name}" zostanie przeniesiony do Treningi historyczne i usunięty z planu.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmCompleteTraining}
+              className="bg-success hover:bg-success/90"
+            >
+              Oznacz jako wykonany
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

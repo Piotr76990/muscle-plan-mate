@@ -1,7 +1,7 @@
 import { Header } from '@/components/Header';
 import { BackButton } from '@/components/BackButton';
 import { Modal } from '@/components/Modal';
-import { TrendingUp, CheckCircle2, Trash2 } from 'lucide-react';
+import { TrendingUp, CheckCircle2, Trash2, Calendar } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { getAllWorkouts, deleteWorkoutById, type Workout } from '@/utils/storage';
 import { Button } from '@/components/ui/button';
@@ -33,6 +33,28 @@ const History = () => {
     setWorkouts(sorted);
   };
 
+  // Calculate statistics
+  const getStats = () => {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setDate(now.getDate() - 7);
+
+    const workoutsLast7Days = workouts.filter(w => {
+      const workoutDate = new Date(w.date);
+      return workoutDate >= sevenDaysAgo && workoutDate <= now;
+    });
+
+    const lastWorkout = workouts.length > 0 ? workouts[0] : null;
+
+    return {
+      totalWorkouts: workouts.length,
+      workoutsLast7Days: workoutsLast7Days.length,
+      lastWorkoutDate: lastWorkout?.date || '-',
+    };
+  };
+
+  const stats = getStats();
+
   const handleDeleteWorkout = () => {
     if (!workoutToDelete) return;
     
@@ -56,7 +78,7 @@ const History = () => {
 
   return (
     <div className="min-h-screen pb-20 md:pb-0">
-      <Header title="Historia i progres" />
+      <Header title="Treningi historyczne" />
       
       <div className="container mx-auto px-4 pt-4">
         <BackButton />
@@ -65,22 +87,30 @@ const History = () => {
       <main className="container mx-auto px-4 py-6">
         <div className="max-w-2xl mx-auto">
           {/* Stats cards */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            <div className="bg-card border border-border rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-4 h-4 text-primary" />
-                <span className="text-sm text-muted-foreground">Ten tydzień</span>
-              </div>
-              <p className="text-2xl font-bold text-foreground">3</p>
-              <p className="text-xs text-muted-foreground">treningi</p>
-            </div>
+          <div className="grid grid-cols-3 gap-3 mb-6">
             <div className="bg-card border border-border rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
                 <CheckCircle2 className="w-4 h-4 text-success" />
-                <span className="text-sm text-muted-foreground">Seria</span>
+                <span className="text-xs text-muted-foreground">Wszystkich</span>
               </div>
-              <p className="text-2xl font-bold text-foreground">12</p>
-              <p className="text-xs text-muted-foreground">dni z rzędu</p>
+              <p className="text-2xl font-bold text-foreground">{stats.totalWorkouts}</p>
+              <p className="text-xs text-muted-foreground">treningów</p>
+            </div>
+            <div className="bg-card border border-border rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="w-4 h-4 text-primary" />
+                <span className="text-xs text-muted-foreground">Ostatnie 7 dni</span>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{stats.workoutsLast7Days}</p>
+              <p className="text-xs text-muted-foreground">treningów</p>
+            </div>
+            <div className="bg-card border border-border rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="w-4 h-4 text-accent" />
+                <span className="text-xs text-muted-foreground">Ostatni</span>
+              </div>
+              <p className="text-sm font-bold text-foreground">{stats.lastWorkoutDate}</p>
+              <p className="text-xs text-muted-foreground">data</p>
             </div>
           </div>
 
@@ -101,7 +131,7 @@ const History = () => {
                     key={workout.id}
                     className="bg-card border border-border rounded-lg p-4 hover:border-primary transition-smooth flex items-start justify-between gap-3"
                   >
-                    <div 
+                     <div 
                       className="flex-1 cursor-pointer"
                       onClick={() => handleOpenDetails(workout)}
                       role="button"
@@ -110,7 +140,12 @@ const History = () => {
                       aria-label={`Otwórz szczegóły treningu ${workout.title}`}
                     >
                       <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-semibold text-foreground">{workout.title}</h3>
+                        <div>
+                          <h3 className="font-semibold text-foreground">{workout.title}</h3>
+                          {workout.fromDay && (
+                            <span className="text-xs text-muted-foreground">z planu: {workout.fromDay}</span>
+                          )}
+                        </div>
                         <span className="text-xs text-muted-foreground">{workout.date}</span>
                       </div>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
