@@ -46,6 +46,14 @@ export const STORAGE_KEYS = {
   WEIGHTS: 'weights_v1',
 } as const;
 
+// Weight helpers
+export interface WeightEntry {
+  id: string;
+  date: string; // ISO string
+  weightKg: number;
+  note?: string;
+}
+
 // Workout helpers
 export interface Workout {
   id: string;
@@ -135,4 +143,50 @@ export const movePlanToHistory = (day: string): boolean => {
   deletePlanForDay(day);
 
   return true;
+};
+
+// Weight management
+export const getAllWeights = (): WeightEntry[] => {
+  const weights = storage.getItem<WeightEntry[]>(STORAGE_KEYS.WEIGHTS);
+  if (!weights) return [];
+  // Sort oldest -> newest for chart
+  return weights.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+};
+
+export const saveWeight = (weight: Omit<WeightEntry, 'id'>): WeightEntry => {
+  const weights = storage.getItem<WeightEntry[]>(STORAGE_KEYS.WEIGHTS) || [];
+  const newWeight: WeightEntry = {
+    ...weight,
+    id: `weight_${Date.now()}`,
+  };
+  storage.setItem(STORAGE_KEYS.WEIGHTS, [...weights, newWeight]);
+  return newWeight;
+};
+
+export const updateWeight = (id: string, updates: Partial<Omit<WeightEntry, 'id'>>): boolean => {
+  const weights = storage.getItem<WeightEntry[]>(STORAGE_KEYS.WEIGHTS) || [];
+  const index = weights.findIndex(w => w.id === id);
+  if (index === -1) return false;
+  
+  weights[index] = { ...weights[index], ...updates };
+  storage.setItem(STORAGE_KEYS.WEIGHTS, weights);
+  return true;
+};
+
+export const deleteWeight = (id: string): boolean => {
+  const weights = storage.getItem<WeightEntry[]>(STORAGE_KEYS.WEIGHTS) || [];
+  const filtered = weights.filter(w => w.id !== id);
+  if (filtered.length === weights.length) return false;
+  
+  storage.setItem(STORAGE_KEYS.WEIGHTS, filtered);
+  return true;
+};
+
+export const exportWeightsCSV = (): string => {
+  const weights = getAllWeights();
+  const header = 'date,weightKg,note\n';
+  const rows = weights.map(w => 
+    `${w.date},${w.weightKg},"${(w.note || '').replace(/"/g, '""')}"`
+  ).join('\n');
+  return header + rows;
 };
