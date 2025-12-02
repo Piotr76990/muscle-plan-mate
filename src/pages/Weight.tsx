@@ -127,28 +127,15 @@ const Weight = () => {
           {/* Header with buttons */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <h2 className="text-2xl font-bold text-foreground">Tracker wagi</h2>
-            <div className="flex gap-2 w-full sm:w-auto">
+            {hasData && (
               <Button
-                onClick={() => {
-                  setEditingWeight(null);
-                  setIsModalOpen(true);
-                }}
-                className="flex-1 sm:flex-none"
+                onClick={handleExport}
+                variant="outline"
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Dodaj pomiar
+                <Download className="w-4 h-4 mr-2" />
+                CSV
               </Button>
-              {hasData && (
-                <Button
-                  onClick={handleExport}
-                  variant="outline"
-                  className="flex-1 sm:flex-none"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  CSV
-                </Button>
-              )}
-            </div>
+            )}
           </div>
 
           {!hasData ? (
