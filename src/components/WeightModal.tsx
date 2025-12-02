@@ -42,7 +42,7 @@ export const WeightModal = ({ isOpen, onClose, onSave, editWeight }: WeightModal
     }
   }, [isOpen, editWeight]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent, closeAfter: boolean = true) => {
     e.preventDefault();
     
     const weight = parseFloat(weightKg);
@@ -62,7 +62,18 @@ export const WeightModal = ({ isOpen, onClose, onSave, editWeight }: WeightModal
       note: note.trim() || undefined,
     });
     
-    onClose();
+    if (closeAfter) {
+      onClose();
+    } else {
+      // Reset form for next entry
+      const now = new Date();
+      const offset = now.getTimezoneOffset();
+      const localNow = new Date(now.getTime() - offset * 60 * 1000);
+      setDate(localNow.toISOString().slice(0, 16));
+      setWeightKg('');
+      setNote('');
+      setError('');
+    }
   };
 
   return (
@@ -117,13 +128,25 @@ export const WeightModal = ({ isOpen, onClose, onSave, editWeight }: WeightModal
           <p className="text-sm text-destructive">{error}</p>
         )}
 
-        <div className="flex gap-3 pt-2">
-          <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-            Anuluj
-          </Button>
-          <Button type="submit" className="flex-1">
-            Zapisz
-          </Button>
+        <div className="flex flex-col gap-3 pt-2">
+          <div className="flex gap-3">
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+              Anuluj
+            </Button>
+            <Button type="submit" onClick={(e) => handleSubmit(e, true)} className="flex-1">
+              Zapisz
+            </Button>
+          </div>
+          {!editWeight && (
+            <Button 
+              type="button" 
+              onClick={(e) => handleSubmit(e, false)} 
+              variant="secondary"
+              className="w-full"
+            >
+              Zapisz i dodaj kolejny
+            </Button>
+          )}
         </div>
       </form>
     </Modal>

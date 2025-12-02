@@ -156,6 +156,16 @@ const Weight = () => {
             </div>
           ) : (
             <>
+              {/* Add measurement button */}
+              <div className="mb-6">
+                <Button onClick={() => {
+                  setEditingWeight(null);
+                  setIsModalOpen(true);
+                }}>
+                  <Plus className="w-5 h-5 mr-2" />
+                  Dodaj pomiar
+                </Button>
+              </div>
               {/* Stats cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="bg-card border border-border rounded-lg p-4">
