@@ -10,30 +10,17 @@ const MuscleMap = () => {
 
   return (
     <div className="min-h-screen pb-20 md:pb-0">
-      <Header title="Mapa mięśni" />
+      <Header title="Zbiór ćwiczeń" />
       
       <div className="container mx-auto px-4 pt-4">
         <BackButton />
+        <p className="text-muted-foreground text-center mt-4">
+          Wybierz grupę mięśniową, aby zobaczyć dostępne ćwiczenia
+        </p>
       </div>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-6">
         <div className="max-w-2xl mx-auto">
-          <div className="mb-6 text-center">
-            <p className="text-muted-foreground">
-              Wybierz grupę mięśniową, aby zobaczyć dostępne ćwiczenia
-            </p>
-          </div>
-
-          {/* Placeholder for body SVG */}
-          <div className="mb-8 bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl border border-border p-12 flex items-center justify-center">
-            <div className="text-center">
-              <Dumbbell className="w-16 h-16 text-primary mx-auto mb-4" />
-              <p className="text-sm text-muted-foreground">
-                Sylwetka ciała - miejsce na przyszłą interaktywną mapę
-              </p>
-            </div>
-          </div>
-
           <div className="grid gap-3 sm:grid-cols-2">
             {muscleGroups.map((muscle) => (
               <button

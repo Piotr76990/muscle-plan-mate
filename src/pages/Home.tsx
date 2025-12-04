@@ -5,7 +5,7 @@ import { Flame, Calendar, TrendingUp, Weight } from 'lucide-react';
 const Home = () => {
   const mainCards = [
     {
-      title: 'Mapa mięśni',
+      title: 'Zbiór ćwiczeń',
       description: 'Przeglądaj ćwiczenia według grup mięśniowych',
       icon: Flame,
       to: '/muscle-map',
