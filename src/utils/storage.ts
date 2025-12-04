@@ -44,6 +44,7 @@ export const STORAGE_KEYS = {
   WORKOUTS: 'workouts_v1',
   PLAN: 'plan_v1',
   WEIGHTS: 'weights_v1',
+  TEMPLATES: 'templates_v1',
 } as const;
 
 // Weight helpers
