@@ -1,10 +1,11 @@
 import { Header } from '@/components/Header';
 import { BackButton } from '@/components/BackButton';
 import { Modal } from '@/components/Modal';
-import { Calendar, Plus, Trash2, X, ArrowUp, ArrowDown, Eye, Edit2, CheckCircle2 } from 'lucide-react';
+import { Calendar, Plus, Trash2, X, ArrowUp, ArrowDown, Edit2, CheckCircle2, Save, FileText, Copy } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { movePlanToHistory } from '@/utils/storage';
+import { getAllTemplates, saveTemplate, deleteTemplate, Template } from '@/utils/templateStorage';
 import { sampleExercises, getExercisesByMuscle } from '@/data/exercises.sample';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -62,10 +63,19 @@ const Plan = () => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [isDeleteTemplateDialogOpen, setIsDeleteTemplateDialogOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState<string>('Poniedziałek');
   const [trainings, setTrainings] = useState<Training[]>([]);
   const [editingTraining, setEditingTraining] = useState<Training | null>(null);
   const [previewTraining, setPreviewTraining] = useState<Training | null>(null);
+  
+  // Template state
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [templateName, setTemplateName] = useState('');
+  const [templateDescription, setTemplateDescription] = useState('');
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
+  const [templateToDelete, setTemplateToDelete] = useState<Template | null>(null);
   
   // Form state
   const [trainingName, setTrainingName] = useState('');
@@ -85,7 +95,7 @@ const Plan = () => {
     { id: 'brzuch', name: 'Brzuch' },
   ];
 
-  // Load trainings from localStorage
+  // Load trainings and templates from localStorage
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
@@ -95,6 +105,7 @@ const Plan = () => {
         console.error('Failed to load trainings', e);
       }
     }
+    setTemplates(getAllTemplates());
   }, []);
 
   // Save trainings to localStorage
@@ -103,13 +114,27 @@ const Plan = () => {
     setTrainings(newTrainings);
   };
 
-  const openNewTrainingModal = (day?: string) => {
+  const refreshTemplates = () => {
+    setTemplates(getAllTemplates());
+  };
+
+  const openNewTrainingModal = (day?: string, preselectedTemplateId?: string) => {
     setSelectedDay(day || 'Poniedziałek');
     setTrainingName('');
     setSelectedExercises([]);
     setExerciseSets({});
     setSelectedMuscleGroup('klatka');
     setEditingTraining(null);
+    setSelectedTemplateId('');
+    
+    // If template preselected, apply it
+    if (preselectedTemplateId) {
+      const template = templates.find(t => t.id === preselectedTemplateId);
+      if (template) {
+        applyTemplateToForm(template);
+      }
+    }
+    
     setIsModalOpen(true);
   };
 
@@ -131,7 +156,85 @@ const Plan = () => {
     });
     setExerciseSets(sets);
     setEditingTraining(previewTraining);
+    setSelectedTemplateId('');
     setIsModalOpen(true);
+  };
+
+  const openSaveAsTemplateModal = () => {
+    if (!previewTraining) return;
+    setTemplateName(previewTraining.name);
+    setTemplateDescription('');
+    setIsTemplateModalOpen(true);
+  };
+
+  const handleSaveAsTemplate = () => {
+    if (!previewTraining) return;
+    if (!templateName.trim()) {
+      toast.error('Nazwa szablonu nie może być pusta');
+      return;
+    }
+
+    saveTemplate({
+      name: templateName.trim(),
+      description: templateDescription.trim() || undefined,
+      exercises: previewTraining.exercises.map(e => ({
+        id: e.id,
+        name: e.name,
+        setsText: e.setsText,
+      })),
+    });
+
+    refreshTemplates();
+    toast.success('Szablon zapisany');
+    setIsTemplateModalOpen(false);
+  };
+
+  const applyTemplateToForm = (template: Template) => {
+    if (!trainingName.trim()) {
+      setTrainingName(template.name);
+    }
+    const exerciseIds = template.exercises.map(e => e.id);
+    setSelectedExercises(exerciseIds);
+    const sets: Record<string, string> = {};
+    template.exercises.forEach(e => {
+      if (e.setsText) sets[e.id] = e.setsText;
+    });
+    setExerciseSets(sets);
+  };
+
+  const handleTemplateSelect = (templateId: string) => {
+    if (templateId === 'none') {
+      setSelectedTemplateId('');
+      return;
+    }
+    
+    const template = templates.find(t => t.id === templateId);
+    if (!template) return;
+
+    // If exercises already selected, confirm overwrite
+    if (selectedExercises.length > 0) {
+      if (confirm('Wybranie szablonu nadpisze aktualnie wybrane ćwiczenia. Kontynuować?')) {
+        setSelectedTemplateId(templateId);
+        applyTemplateToForm(template);
+      }
+    } else {
+      setSelectedTemplateId(templateId);
+      applyTemplateToForm(template);
+    }
+  };
+
+  const handleDeleteTemplate = (template: Template) => {
+    setTemplateToDelete(template);
+    setIsDeleteTemplateDialogOpen(true);
+  };
+
+  const confirmDeleteTemplate = () => {
+    if (!templateToDelete) return;
+    deleteTemplate(templateToDelete.id);
+    refreshTemplates();
+    toast.success('Szablon usunięty');
+    setIsDeleteTemplateDialogOpen(false);
+    setTemplateToDelete(null);
   };
 
   const handleSaveTraining = () => {
@@ -330,9 +433,58 @@ const Plan = () => {
             })}
           </div>
 
+          {/* Templates Section */}
+          {templates.length > 0 && (
+            <div className="mt-8">
+              <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Twoje szablony treningów
+              </h3>
+              <div className="space-y-2">
+                {templates.map((template) => (
+                  <div
+                    key={template.id}
+                    className="bg-card border border-border rounded-lg p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-accent/50 flex items-center justify-center flex-shrink-0">
+                        <Copy className="w-5 h-5 text-foreground" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-foreground truncate">{template.name}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {template.exercises.length} ćwiczeń
+                          {template.description && ` • ${template.description}`}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => openNewTrainingModal(undefined, template.id)}
+                          size="sm"
+                          variant="outline"
+                          className="min-h-[44px]"
+                        >
+                          Użyj
+                        </Button>
+                        <Button
+                          onClick={() => handleDeleteTemplate(template)}
+                          size="sm"
+                          variant="ghost"
+                          className="min-h-[44px] text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="mt-6 p-4 bg-muted/50 rounded-lg border border-border">
             <p className="text-sm text-muted-foreground">
-              💡 Kliknij dzień, aby dodać lub edytować trening
+              💡 Kliknij dzień, aby dodać lub edytować trening. Zapisuj treningi jako szablony, aby szybko tworzyć nowe plany.
             </p>
           </div>
         </div>
@@ -345,6 +497,28 @@ const Plan = () => {
         title={editingTraining ? 'Edytuj trening' : 'Nowy trening'}
       >
         <div className="space-y-4">
+          {/* Template Selection */}
+          {!editingTraining && templates.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Wybierz szablon (opcjonalnie)
+              </label>
+              <Select value={selectedTemplateId || 'none'} onValueChange={handleTemplateSelect}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Brak — wybierz szablon" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Brak — utwórz od zera</SelectItem>
+                  {templates.map(template => (
+                    <SelectItem key={template.id} value={template.id}>
+                      {template.name} ({template.exercises.length} ćw.)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           {/* Day Selection */}
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
@@ -572,6 +746,14 @@ const Plan = () => {
                 <CheckCircle2 className="w-4 h-4 mr-2" />
                 Wykonane
               </Button>
+              <Button
+                onClick={openSaveAsTemplateModal}
+                variant="secondary"
+                className="w-full"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Zapisz jako szablon
+              </Button>
               <div className="flex gap-2">
                 <Button onClick={openEditFromPreview} variant="outline" className="flex-1">
                   <Edit2 className="w-4 h-4 mr-2" />
@@ -591,6 +773,49 @@ const Plan = () => {
         )}
       </Modal>
 
+      {/* Save as Template Modal */}
+      <Modal
+        isOpen={isTemplateModalOpen}
+        onClose={() => setIsTemplateModalOpen(false)}
+        title="Zapisz jako szablon"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Nazwa szablonu *
+            </label>
+            <Input
+              type="text"
+              value={templateName}
+              onChange={(e) => setTemplateName(e.target.value)}
+              placeholder="np. Push Day A"
+              className="w-full"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Opis (opcjonalnie)
+            </label>
+            <Input
+              type="text"
+              value={templateDescription}
+              onChange={(e) => setTemplateDescription(e.target.value)}
+              placeholder="np. Klatka, barki, triceps"
+              className="w-full"
+            />
+          </div>
+          <div className="flex gap-2 pt-4">
+            <Button onClick={handleSaveAsTemplate} className="flex-1">
+              <Save className="w-4 h-4 mr-2" />
+              Zapisz szablon
+            </Button>
+            <Button onClick={() => setIsTemplateModalOpen(false)} variant="outline" className="flex-1">
+              Anuluj
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
@@ -603,6 +828,24 @@ const Plan = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Anuluj</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDeleteTraining}>
+              Usuń
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Template Confirmation Dialog */}
+      <AlertDialog open={isDeleteTemplateDialogOpen} onOpenChange={setIsDeleteTemplateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Usunąć szablon?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Szablon "{templateToDelete?.name}" zostanie trwale usunięty. Istniejące treningi nie zostaną zmienione.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteTemplate}>
               Usuń
             </AlertDialogAction>
           </AlertDialogFooter>
