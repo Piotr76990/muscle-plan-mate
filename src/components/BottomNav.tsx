@@ -5,7 +5,7 @@ export const BottomNav = () => {
   const location = useLocation();
   
   const navItems = [
-    { to: '/muscle-map', icon: Flame, label: 'Mapa', ariaLabel: 'Zbiór ćwiczeń' },
+    { to: '/muscle-map', icon: Flame, label: 'Zbiór', ariaLabel: 'Zbiór ćwiczeń' },
     { to: '/plan', icon: Calendar, label: 'Plan', ariaLabel: 'Plan treningowy' },
     { to: '/history', icon: TrendingUp, label: 'Historia', ariaLabel: 'Treningi historyczne' },
     { to: '/weight', icon: Scale, label: 'Waga', ariaLabel: 'Tracker wagi' },
