@@ -19,9 +19,8 @@ const MuscleMap = () => {
         </p>
       </div>
 
-      <main className="container mx-auto px-4 py-6">
-        <div className="max-w-2xl mx-auto">
-          <div className="grid gap-3 sm:grid-cols-2">
+      <main className="container mx-auto px-4 py-6 overflow-y-auto">
+        <div className="flex flex-col gap-4 max-w-[650px] mx-auto">
             {muscleGroups.map((muscle) => (
               <button
                 key={muscle}
@@ -40,7 +39,6 @@ const MuscleMap = () => {
                 </div>
               </button>
             ))}
-          </div>
         </div>
       </main>
     </div>
