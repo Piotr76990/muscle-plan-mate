@@ -91,7 +91,8 @@ const Plan = () => {
     { id: 'biceps', name: 'Biceps' },
     { id: 'triceps', name: 'Triceps' },
     { id: 'przedramie', name: 'Przedramię' },
-    { id: 'uda', name: 'Uda', subGroups: ['czworoglowy', 'dwuglowy'] },
+    { id: 'czworoglowy', name: 'Czworogłowy uda' },
+    { id: 'dwuglowy', name: 'Dwugłowy uda' },
     { id: 'posladki', name: 'Pośladki' },
     { id: 'lydki', name: 'Łydki' },
     { id: 'brzuch', name: 'Brzuch' },
@@ -367,10 +368,7 @@ const Plan = () => {
     setExerciseSets(newSets);
   };
 
-  const getExercisesForGroup = (groupId: string, subGroups?: string[]) => {
-    if (subGroups) {
-      return sampleExercises.filter(ex => subGroups.includes(ex.muscle));
-    }
+  const getExercisesForGroup = (groupId: string) => {
     return getExercisesByMuscle(groupId);
   };
 
@@ -576,10 +574,7 @@ const Plan = () => {
 
               {/* Exercise List */}
               <div className="max-h-64 overflow-y-auto space-y-2 border border-border rounded-lg p-3">
-                {getExercisesForGroup(
-                  selectedMuscleGroup,
-                  muscleGroups.find(g => g.id === selectedMuscleGroup)?.subGroups
-                ).map(exercise => (
+                {getExercisesForGroup(selectedMuscleGroup).map(exercise => (
                   <div key={exercise.id} className="space-y-2">
                     <div className="flex items-start gap-2">
                       <Checkbox
