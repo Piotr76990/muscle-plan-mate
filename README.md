@@ -4,7 +4,7 @@ Nowoczesna aplikacja webowa (PWA) do planowania i śledzenia treningów, zbudowa
 
 ## 🚀 Funkcjonalności
 
-- **Mapa mięśni** - Przeglądaj ćwiczenia według grup mięśniowych
+- **Zbiór ćwiczeń** - Przeglądaj ćwiczenia według grup mięśniowych
 - **Plan treningowy** - Planuj treningi na cały tydzień
 - **Historia i progres** - Śledź wykonane treningi i postępy
 - **Tracker wagi** - Monitoruj swoją wagę i kompozycję ciała
@@ -124,6 +124,7 @@ Aplikacja jest szkieletem gotowym do rozbudowy o:
 - Export/import danych
 - Synchronizacja z cloud (Supabase/Firebase)
 - Integracja z wearables
+- Mapa mięśni
 
 ## 📄 Licencja
 
