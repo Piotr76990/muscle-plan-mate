@@ -203,6 +203,43 @@ export const sampleExercises: Exercise[] = [
     description: 'Ćwiczenie na płaszczczyznową część łydki. Wspnij się na palce w pozycji siedzącej.',
     equipment: 'Maszyna',
   },
+
+  // Kardio
+  {
+    id: 'cardio-1',
+    name: 'Bieg na bieżni',
+    muscle: 'kardio',
+    description: 'Podstawowe ćwiczenie cardio. Zacznij od rozgrzewki, stopniowo zwiększaj tempo.',
+    equipment: 'Bieżnia',
+  },
+  {
+    id: 'cardio-2',
+    name: 'Rower stacjonarny',
+    muscle: 'kardio',
+    description: 'Ćwiczenie o niskim obciążeniu stawów. Reguluj opór i tempo pedałowania.',
+    equipment: 'Rower stacjonarny',
+  },
+  {
+    id: 'cardio-3',
+    name: 'Skakanka',
+    muscle: 'kardio',
+    description: 'Intensywne cardio z własną masą ciała. Skacz na palcach, utrzymuj równe tempo.',
+    equipment: 'Skakanka',
+  },
+  {
+    id: 'cardio-4',
+    name: 'Wioślarz',
+    muscle: 'kardio',
+    description: 'Kompleksowe ćwiczenie angażujące całe ciało. Pchaj nogami, ciągnij ramionami.',
+    equipment: 'Wioślarz',
+  },
+  {
+    id: 'cardio-5',
+    name: 'Orbitrek',
+    muscle: 'kardio',
+    description: 'Cardio bez obciążenia stawów. Płynne ruchy nóg i rąk naprzemiennie.',
+    equipment: 'Orbitrek',
+  },
 ];
 
 export const getMuscleGroups = (): string[] => {
@@ -227,6 +264,7 @@ export const getMuscleDisplayName = (muscle: string): string => {
     dwuglowy: 'Dwugłowy uda',
     posladki: 'Pośladki',
     lydki: 'Łydki',
+    kardio: 'Kardio',
   };
   return names[muscle] || muscle;
 };
