@@ -3,9 +3,10 @@ import { useParams } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { BackButton } from '@/components/BackButton';
 import { Modal } from '@/components/Modal';
+import { ExerciseInfoIcons } from '@/components/ExerciseInfoIcons';
 import { fetchExerciseById } from '@/utils/api';
 import { Exercise } from '@/data/exercises.sample';
-import { Dumbbell, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 const ExerciseDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -68,18 +69,8 @@ const ExerciseDetail = () => {
 
       <main className="container mx-auto px-4 py-6">
         <div className="max-w-2xl mx-auto space-y-6">
-          {/* Exercise image */}
-          <div className="w-full h-[200px] rounded-xl overflow-hidden border border-border bg-muted">
-            <img
-              src={exercise.imageUrl || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80'}
-              alt={exercise.name}
-              className="w-full h-full object-cover"
-              loading="lazy"
-              onError={(e) => {
-                e.currentTarget.src = 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80';
-              }}
-            />
-          </div>
+          {/* Exercise info icons panel */}
+          <ExerciseInfoIcons exercise={exercise} />
 
           {/* Exercise details */}
           <div className="bg-card border border-border rounded-lg p-6 space-y-4">
