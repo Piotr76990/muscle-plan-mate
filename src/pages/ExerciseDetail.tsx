@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { BackButton } from '@/components/BackButton';
-import { Modal } from '@/components/Modal';
 import { ExerciseInfoIcons } from '@/components/ExerciseInfoIcons';
 import { fetchExerciseById } from '@/utils/api';
 import { Exercise } from '@/data/exercises.sample';
@@ -12,7 +11,6 @@ const ExerciseDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
     const loadExercise = async () => {
@@ -91,34 +89,8 @@ const ExerciseDetail = () => {
               </span>
             </div>
           </div>
-
-          {/* Add to workout button */}
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="w-full py-3 px-4 gradient-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-smooth"
-          >
-            Dodaj do treningu
-          </button>
         </div>
       </main>
-
-      <Modal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        title="Dodaj do treningu"
-      >
-        <div className="space-y-4">
-          <p className="text-muted-foreground text-sm">
-            Funkcjonalność dodawania do treningu będzie wkrótce dostępna.
-          </p>
-          <button
-            onClick={() => setShowAddModal(false)}
-            className="w-full py-2 px-4 bg-accent text-accent-foreground rounded-lg font-medium hover:bg-accent/90 transition-smooth"
-          >
-            OK
-          </button>
-        </div>
-      </Modal>
     </div>
   );
 };
