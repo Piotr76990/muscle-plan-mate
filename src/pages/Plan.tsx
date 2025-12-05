@@ -83,16 +83,19 @@ const Plan = () => {
   const [exerciseSets, setExerciseSets] = useState<Record<string, string>>({});
   const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<string>('klatka');
   
-  // Muscle groups in desired order
+  // Muscle groups in desired order - all categories from exercises.sample.ts
   const muscleGroups = [
     { id: 'klatka', name: 'Klatka' },
     { id: 'plecy', name: 'Plecy' },
     { id: 'barki', name: 'Barki' },
     { id: 'biceps', name: 'Biceps' },
+    { id: 'triceps', name: 'Triceps' },
     { id: 'przedramie', name: 'Przedramię' },
     { id: 'uda', name: 'Uda', subGroups: ['czworoglowy', 'dwuglowy'] },
+    { id: 'posladki', name: 'Pośladki' },
     { id: 'lydki', name: 'Łydki' },
     { id: 'brzuch', name: 'Brzuch' },
+    { id: 'kardio', name: 'Kardio' },
   ];
 
   // Load trainings and templates from localStorage
