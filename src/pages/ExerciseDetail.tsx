@@ -68,14 +68,14 @@ const ExerciseDetail = () => {
 
       <main className="container mx-auto px-4 py-6">
         <div className="max-w-2xl mx-auto space-y-6">
-          {/* Media placeholder */}
-          <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl border border-border p-12 flex items-center justify-center">
-            <div className="text-center">
-              <Dumbbell className="w-16 h-16 text-primary mx-auto mb-4" />
-              <p className="text-sm text-muted-foreground">
-                Miejsce na media (zdjęcie/GIF/film)
-              </p>
-            </div>
+          {/* Exercise image */}
+          <div className="w-full h-[200px] rounded-xl overflow-hidden border border-border bg-muted">
+            <img
+              src={`https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80`}
+              alt={exercise.name}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
           </div>
 
           {/* Exercise details */}
