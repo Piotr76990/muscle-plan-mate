@@ -71,10 +71,13 @@ const ExerciseDetail = () => {
           {/* Exercise image */}
           <div className="w-full h-[200px] rounded-xl overflow-hidden border border-border bg-muted">
             <img
-              src={`https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80`}
+              src={exercise.imageUrl || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80'}
               alt={exercise.name}
               className="w-full h-full object-cover"
               loading="lazy"
+              onError={(e) => {
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80';
+              }}
             />
           </div>
 
