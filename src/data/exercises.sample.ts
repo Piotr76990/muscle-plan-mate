@@ -273,6 +273,30 @@ export const sampleExercises: Exercise[] = [
     equipment: 'Orbitrek',
     imageUrl: 'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=800&q=80',
   },
+  {
+    id: 'cardio-6',
+    name: 'Basen',
+    muscle: 'kardio',
+    description: 'Pływanie to doskonałe cardio angażujące całe ciało. Rozwija wytrzymałość i siłę mięśni.',
+    equipment: 'Basen',
+    imageUrl: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&q=80',
+  },
+  {
+    id: 'cardio-7',
+    name: 'Piłka',
+    muscle: 'kardio',
+    description: 'Trening z piłką - gra rekreacyjna lub ćwiczenia techniczne. Świetne cardio i koordynacja.',
+    equipment: 'Piłka',
+    imageUrl: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=800&q=80',
+  },
+  {
+    id: 'cardio-8',
+    name: 'Piłka mecz',
+    muscle: 'kardio',
+    description: 'Mecz piłkarski - intensywne cardio z elementami sprintu, zmian kierunku i gry zespołowej.',
+    equipment: 'Piłka, boisko',
+    imageUrl: 'https://images.unsplash.com/photo-1551958219-acbc608c6377?w=800&q=80',
+  },
 ];
 
 export const getPlaceholderImage = () => PLACEHOLDER_IMAGE;
